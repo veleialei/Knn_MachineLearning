@@ -4,8 +4,6 @@ import pandas as pd
 import numpy as np
 import os
 
-file = 'PhishingData.arff'
-
 def toCsv(content):
     data = False
     header = ""
@@ -25,8 +23,8 @@ def toCsv(content):
             newContent.append(line)
     return newContent
 
-# Main loop for reading and writing files
-
+file = 'PhishingData.arff'
+newFile = ''
 with open(file , "r") as inFile:
     content = inFile.readlines()
     name,ext = os.path.splitext(inFile.name)
@@ -35,15 +33,18 @@ with open(file , "r") as inFile:
     with open(newFile, "w") as outFile:
         outFile.writelines(new)
 
-df = pd.read_csv(newFile) #legitimate(1), suspicious(0) or phishy(-1) based on whether the site contains pop-up windows
-train_X = df.iloc[:,:-1]
-train_Labels = df.iloc[:,-1]
-train = knn(train_X, train_Labels)
-train.fit(5)
-print(train.calAcc())
-test = 225
-newY = train.predictOne(train_X.iloc[test])
-newYs = train.predict(train_X)
-print(newY, train_Labels.iloc[test])
-print("============================")
-print(newYs)
+df = pd.read_csv(newFile)
+
+X = df.iloc[:,:-1]
+Y = df.iloc[:,-1]
+l = round(len(X)*0.8)
+train_X = np.array(X[:l])
+train_Y = np.array(Y[:l])
+test_X = np.array(X[l:])
+test_Y = np.array(Y[l:])
+
+oop = knn(train_X, train_Y, test_X, test_Y)
+for i in range(2,13):
+    a = oop.fit(i)
+    b = oop.getAccuracy()
+    print("k = ", i, ":", b)
